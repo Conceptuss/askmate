@@ -17,7 +17,10 @@ def get_id(file,qid=0):
         for i in data[1::]:
             splited_row = i.strip().split(",")
             ids.append(int(splited_row[0]))
-        qid = max(ids)
+        if len(ids) > 0:
+            qid = max(ids)
+        else:
+            qid = 0
 
 
         return int(qid) + 1
@@ -32,8 +35,10 @@ def get_id(file,qid=0):
                 ids.append(int(splited_row[0]))
 
 
-
-        aid=max(ids)
+        if len(ids) > 0:
+            aid=max(ids)
+        else:
+            aid =0
 
 
         return int(aid) + 1
