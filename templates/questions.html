@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<table border>
+        <tr>
+            <th>Id</th>
+            <th>submission_time</th>
+            <th>view_number</th>
+            <th>vote_number</th>
+            <th>title</th>
+            <th>message</th>
+            <th>image</th>
+        </tr>
+        {% for value in users_questions %}
+            <tr>
+                <td >
+                    <form action="http://127.0.0.1:8001/questions/{{ value['id'] }}">
+                    <input type = "submit" value ="{{ value['id'] }}">
+                    </form>
+                </td>
+                <td>{{ value["submission_time"] }}</td>
+                <td>{{ value["view_number"] }}</td>
+                <td>{{ value["vote_number"] }}</td>
+                <td>{{ value["title"] }}</td>
+                <td>{{ value["message"] }}</td>
+                <td>{{ value["image"] }}</td>
+
+            </tr>
+        {% endfor %}
+
+
+</form>
+    <table
+
+       <tr>
+           <td>
+               <form action="http://127.0.0.1:8001/add_question">
+                    <input type="submit" value="Add new question">
+                   </form>
+           </td>
+
+       </tr>
+
+
+    </table>
+</body>
+</html>
