@@ -10,16 +10,12 @@
      <input type="submit" value="Back to question">
  </form>
 
- <form action="{{ url_for('edit_question_submit',q_id=q_id) }}", method="POST">
+ <form action="{{ url_for('add_comment', q_id=q_id, a_id=a_id) }}", method="POST">
      <table>
 
          <tr>
-            <td>Title: </td>
-            <td><input type="text" size = "150" name="title" value="{{ question_title }}"></td>
-        </tr>
-         <tr>
-            <td>Message: </td>
-            <td><input type="text" size = "150" name="text" value="{{ question_text }}"></td>
+            <td>Comment: </td>
+            <td><input type="text" size = "150" name="text"></td>
         </tr>
 
          <tr style="text-align: right; ">

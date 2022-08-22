@@ -5,245 +5,345 @@ import util as u
 from datetime import datetime
 
 
-DATA_FILE_ANSWER = "sample_data/answer.csv"
-DATA_FILE_QUESTION = "sample_data/question.csv"
 
 
-def read_questions(type):
-    user_questions = []
-    # with open(DATA_FILE_QUESTION, 'r') as data_file:
-    #     rows = data_file.readlines()
-    rows = con.read_from_file(type)
-    headers = rows[0].strip().split(",")
-    # print(headers)
-    for row in rows[1::]:
-        splited_row = row.strip().split(",")
-        story = {}
-        for h, r in zip(headers, splited_row):
-            if h == "submission_time":
-                story[h] = u.convert_from_timestamp(r)
+@con.connection_handler
+def read_questions(cursor):
+    query = f"""SELECT id, title, text, TO_CHAR(time, 'YYYY-MM-DD') AS time,like_number, dont_like_number,view_number 
+                FROM question
+                ORDER BY id;"""
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+@con.connection_handler
+def read_questions_search(cursor,q_title):
+    query = f"""SELECT q.id, q.title, q.text, TO_CHAR(q.time, 'YYYY-MM-DD') AS time,q.like_number, q.dont_like_number,q.view_number 
+                FROM question AS q
+                LEFT JOIN answer AS a ON a.question_id = q.id
+                LEFT JOIN comment AS qc ON q.id=qc.question_id
+                LEFT JOIN comment AS ac ON a.id=ac.answer_id
+                WHERE q.title LIKE '%{q_title}%' OR q.text LIKE '%{q_title}%' OR a.text LIKE '%{q_title}%' OR qc.text LIKE '%{q_title}%' OR ac.text LIKE '%{q_title}%'
+                GROUP BY q.id
+                ORDER BY q.id;"""
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+@con.connection_handler
+def read_questions_sort(cursor,s_title,s_type):
+    query = f"""SELECT id, title, text, TO_CHAR(time, 'YYYY-MM-DD') AS time,like_number, dont_like_number,view_number 
+                FROM question
+                ORDER BY {s_title} {s_type};"""
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+@con.connection_handler_insert
+def insert_question(cursor,title,text):
+    query = f"""INSERT INTO question (title, text)
+                VALUES ('{title}','{text}');"""
+    cursor.execute(query)
+
+
+@con.connection_handler
+def read_question_from_id(cursor,id):
+    query = f"""SELECT id, title, text, TO_CHAR(time, 'YYYY-MM-DD') AS time,like_number, dont_like_number,view_number 
+                FROM question
+                WHERE id={id};"""
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+@con.connection_handler_insert
+def insert_answer(cursor,question_id,text):
+    query = f"""INSERT INTO answer (question_id,text)
+            VALUES ({question_id},'{text}');
+            """
+    cursor.execute(query)
+
+  
+
+@con.connection_handler
+def read_answer(cursor, question_id):
+    query = f"""SELECT id, question_id, text, TO_CHAR(time, 'YYYY-MM-DD') AS time,like_number, dont_like_number,view_number 
+                FROM answer
+                WHERE question_id={question_id}
+                ORDER BY id;"""
+    cursor.execute(query)
+
+    return cursor.fetchall()
+
+
+@con.connection_handler_insert
+def delete_question(cursor,id):
+    query = f"""DELETE 
+                FROM answer 
+                WHERE question_id ={id};"""
+    cursor.execute(query)            
+    query = f"""DELETE 
+                FROM question 
+                WHERE id = {id};"""
+    cursor.execute(query)
+
+
+@con.connection_handler_insert
+def delete_answer(cursor,id):
+    query = f"""DELETE 
+                FROM answer 
+                WHERE id ={id};"""
+    cursor.execute(query)
+
+
+@con.connection_handler_insert
+def vote_up_question(cursor,id):
+    query = f"""UPDATE question
+                SET like_number = like_number + 1
+                WHERE id = {id};"""
+    cursor.execute(query)
+
+
+@con.connection_handler_insert
+def vote_up_answer(cursor,id):
+    query = f"""UPDATE answer
+                SET like_number = like_number + 1
+                WHERE id = {id};"""
+    cursor.execute(query)
+
+
+@con.connection_handler_insert
+def vote_down_question(cursor,id):
+    query = f"""UPDATE question
+                SET dont_like_number = dont_like_number + 1
+                WHERE id = {id};"""
+    cursor.execute(query)
+
+
+@con.connection_handler_insert
+def vote_down_answer(cursor,id):
+    query = f"""UPDATE answer
+                SET dont_like_number = dont_like_number + 1
+                WHERE id = {id};"""
+    cursor.execute(query)
+    
+
+@con.connection_handler_insert
+def edit_question(cursor,id,text,title):
+    query = f"""UPDATE question
+                SET text ='{text}', title = '{title}'
+                WHERE id = {id};"""
+    cursor.execute(query)
+
+
+@con.connection_handler_insert
+def update_question_view(cursor,q_id):
+    query = f"""UPDATE question
+                SET view_number = view_number +1
+                WHERE id = {q_id};"""
+    cursor.execute(query)    
+
+@con.connection_handler_insert
+def update_answer_view(cursor,a_id):
+    query = f"""UPDATE answer
+                SET view_number = view_number +1
+                WHERE id = {a_id};"""
+    cursor.execute(query)  
+
+
+@con.connection_handler
+def select_answer_from_id(cursor,id):
+    query = f"""SELECT id, question_id, text, TO_CHAR(time, 'YYYY-MM-DD         HH:MI:SS') AS time,like_number, dont_like_number,view_number 
+                FROM answer
+                WHERE id = {id}
+                ORDER BY id; """
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+@con.connection_handler
+def select_answer_comments(cursor,a_id):
+    query = f""" SELECT id, text, TO_CHAR(time, 'YYYY-MM-DD') AS       time     
+            FROM comment
+            WHERE answer_id = {a_id}
+            ORDER BY id;
+            """
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+@con.connection_handler_insert
+def insert_comment_to_answer(cursor,a_id,text):
+    query = f"""INSERT INTO comment (answer_id,text)
+                VALUES ({a_id},'{text}');"""
+    cursor.execute(query)
+
+@con.connection_handler
+def select_question_id_from_answer(cursor,a_id):
+    query = f"""SELECT question_id
+                FROM answer
+                WHERE id = {a_id};"""
+    cursor.execute(query)
+    return cursor.fetchall()
+
+@con.connection_handler_insert
+def insert_comment_to_question(cursor,q_id,text):
+    query = f"""INSERT INTO comment (question_id,text)
+                VALUES ({q_id},'{text}');"""
+    cursor.execute(query)
+
+
+@con.connection_handler
+def select_question_comments(cursor,q_id):
+    query = f""" SELECT id, text, TO_CHAR(time, 'YYYY-MM-DD') AS       time     
+            FROM comment
+            WHERE question_id = {q_id}
+            ORDER BY id;
+            """
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+@con.connection_handler_insert
+def edit_answer(cursor,id,text):
+    query = f"""UPDATE answer
+                SET text ='{text}'
+                WHERE id = {id};"""
+    cursor.execute(query)
+
+
+
+@con.connection_handler_insert
+def delete_coment(cursor,c_id):
+    query = f"""DELETE 
+                FROM comment 
+                WHERE id ={c_id};"""
+    cursor.execute(query)
+
+
+@con.connection_handler
+def select_comment_id(cursor,c_id):
+    query = f""" SELECT CASE 
+                        WHEN question_id IS null THEN 'answer'
+                        ELSE 'question'
+                        END AS type,
+                        CASE 
+                        WHEN question_id IS null THEN answer_id
+                        ELSE question_id
+                        END AS id,
+                        text    
+            FROM comment
+            WHERE id = {c_id}
+            ORDER BY id;
+            """
+    cursor.execute(query)
+    return cursor.fetchall()
+
+@con.connection_handler_insert
+def edit_comment(cursor,id,text):
+    query = f"""UPDATE comment
+                SET text ='{text}'
+                WHERE id = {id};"""
+    cursor.execute(query)
+
+
+@con.connection_handler
+def find_tag_id(cursor, tag_name):
+    tag_split_name = ''
+    for i in tag_name.split():
+        tag_split_name += i
+    # print(tag_split_name)
+
+    select_query = f"""SELECT t.id AS id 
+                        FROM  (
+                        SELECT id, replace(name, ' ', '') AS name 
+                        FROM tag
+                        ) AS t
+                        WHERE t.name = '{tag_split_name}'; """
+    cursor.execute(select_query)
+    tag_id = cursor.fetchall()
+    if tag_id:
+        return tag_id[0]['id']
+
+    
+@con.connection_handler
+def verify_question_id(cursor, question_id):
+    select_query = f"""SELECT id 
+                    FROM question 
+                    WHERE id = {question_id};
+    
+    """
+    cursor.execute(select_query)
+    q_id = cursor.fetchall()
+    if q_id:
+        return True
+    else:
+        return False
+
+
+@con.connection_handler_insert
+def insert_new_tag(cursor, tag_name):
+    insert_query = f"""INSERT INTO tag (name) 
+                        VALUES ('{tag_name}');"""
+    cursor.execute(insert_query)
+
+
+@con.connection_handler
+def verify_question_and_tag(cursor, tag_id, question_id):
+    select_query = f"""SELECT *
+                    FROM question_tag 
+                    WHERE question_id = {question_id} and tag_id = {tag_id};
+    
+    """
+    cursor.execute(select_query)
+    question_tag_exist = cursor.fetchall()
+    if question_tag_exist:
+        return True
+    else:
+        return False
+
+
+@con.connection_handler_insert
+def insert_tag_to_question(cursor, guestion_id, tag_name):
+    tag_id = find_tag_id(tag_name)
+    if verify_question_id(guestion_id):
+
+        if tag_id:
+
+            if verify_question_and_tag(tag_id,guestion_id):
+                return "This Tag exist for this Question"
+
             else:
-                story[h] = r
-        user_questions.append(story)
-    return user_questions
+                insert_query = f"""INSERT INTO question_tag (tag_id,question_id)
+                                VALUES ({tag_id},{guestion_id});"""
+                cursor.execute(insert_query)
+                return "Insert Tag to Question OK"
+                
+
+        else:
+            insert_new_tag(tag_name)
+            tag_id = find_tag_id(tag_name)
+            insert_query = f"""INSERT INTO question_tag (tag_id,question_id)
+                            VALUES ({tag_id},{guestion_id});"""
+            cursor.execute(insert_query)
+            return "Insert Tag OK and insert tag to Question OK"
+    else:
+        return "Question not exist"
 
 
-def read_question_from_id(id):
-    user_questions = []
-
-    rows = con.read_from_file("q")
-    headers = rows[0].strip().split(",")
-    for row in rows[1::]:
-        splited_row = row.strip().split(",")
-
-        if splited_row[0] == str(id):
-            story = {}
-            for h, r in zip(headers, splited_row):
-
-                if h == "submission_time":
-                    story[h] = u.convert_from_timestamp(r)
-                else:
-                    story[h] = r
-            user_questions.append(story)
-    return user_questions
+@con.connection_handler
+def get_question_tags(cursor,q_id):
+    select_query = f"""SELECT t.id AS id, t.name AS name
+                    FROM question_tag  AS qt
+                    LEFT JOIN tag AS t ON t.id = qt.tag_id
+                    WHERE qt.question_id = {q_id};
+    
+    """
+    cursor.execute(select_query)
+    return cursor.fetchall()
 
 
-print(read_question_from_id(2))
-
-
-def read_answer(question_id):
-    answers = []
-    # with open(DATA_FILE_QUESTION, 'r') as data_file:
-    #     rows = data_file.readlines()
-    rows = con.read_from_file("a")
-    headers = rows[0].strip().split(",")
-    # print(headers)
-    for row in rows[1::]:
-        splited_row = row.strip().split(",")
-
-        if splited_row[3] == str(question_id):
-            story = {}
-            for h, r in zip(headers, splited_row):
-
-                if h == "submission_time":
-                    story[h] = u.convert_from_timestamp(r)
-                else:
-                    story[h] = r
-            answers.append(story)
-    return answers
-
-
-def write_data(data: dict, type, question_id = 0):
-    if type == "q":
-            with open(con.DATA_FILE_QUESTION, 'a+') as f:
-                #f.write()
-                id = str(u.get_id(con.DATA_FILE_QUESTION))
-                timestamp = str(int(datetime.now().timestamp()))
-                view = "0"
-                vote = "0"
-                title = data["title"]
-                message = data["message"]
-
-
-                f.write(f"{id},{timestamp},{view},{vote},{title},{message},\n")
-                #print(f"{data['id']},{data['title']},{data['user_story']},{data['acceptance_criteria']},{data['business_value']},{data['estimation']},{data['status']}")
-    elif type == "a":
-        with open(con.DATA_FILE_ANSWER, 'a+') as f:
-            # f.write()
-            id = str(u.get_id(con.DATA_FILE_ANSWER,question_id))
-            timestamp = str(int(datetime.now().timestamp()))
-            vote = "0"
-            qid = question_id
-            message = data["message"]
-
-            f.write(f"{id},{timestamp},{vote},{qid},{message},\n")
-
-
-def delete_question(delete_id, type):
-    if type == "q":
-        user_story = read_questions("q")
-        file_name = con.DATA_FILE_QUESTION
-    elif type == "a":
-        user_story = read_questions("a")
-        file_name = con.DATA_FILE_ANSWER
-    # print(user_story)
-    for i,value in enumerate(user_story):
-        if int(value["id"]) == int(delete_id):
-            del user_story[i]
-
-    with open(file_name, 'w+') as f:
-        header = list(user_story[0].keys())
-        s = ""
-        for i, v in enumerate(header):
-            if i == len(header) - 1:
-                s += str(v)
-            else:
-                s += str(v) + ","
-        f.write(s+"\n")
-        for i,v in enumerate(user_story[0::]):
-            tab = []
-            for j,val in v.items():
-                tab.append(val)
-            s = ""
-            for i, elem in enumerate(tab):
-                if i == len(tab) - 1:
-                    s += str(elem)
-                elif i == 1:
-                    s += str(u.convert_to_timestamp(elem)) + ","
-                else:
-                    s += str(elem) + ","
-            f.write(f"{s}\n")
-
-
-def vote_up(file,id):
-    if file == "q":
-        file_name = con.DATA_FILE_QUESTION
-    elif file == "a":
-        file_name = con.DATA_FILE_ANSWER
-    data=read_questions(file)
-    print(data)
-    for i in data:
-        if int(i['id']) == int(id):
-            temp_id = int(i['vote_number'])
-            temp_id +=1
-            i['vote_number'] = str(temp_id)
-
-
-
-    with open(file_name, 'w+') as f:
-        header = list(data[0].keys())
-        s = ""
-        for i, v in enumerate(header):
-            if i == len(header) - 1:
-                s += str(v)
-            else:
-                s += str(v) + ","
-        f.write(s + "\n")
-        for i, v in enumerate(data[0::]):
-            tab = []
-            for j, val in v.items():
-                tab.append(val)
-            s = ""
-            for i, elem in enumerate(tab):
-                if i == len(tab) - 1:
-                    s += str(elem)
-                elif i == 1:
-                    s += str(u.convert_to_timestamp(elem)) + ","
-                else:
-                    s += str(elem) + ","
-            f.write(f"{s}\n")
-
-
-def vote_down(file,id):
-    if file == "q":
-        file_name = con.DATA_FILE_QUESTION
-    elif file == "a":
-        file_name = con.DATA_FILE_ANSWER
-    data=read_questions(file)
-    print(data)
-    for i in data:
-        if int(i['id']) == int(id):
-            temp_id = int(i['vote_number'])
-            temp_id -=1
-            i['vote_number'] = str(temp_id)
-
-
-
-    with open(file_name, 'w+') as f:
-        header = list(data[0].keys())
-        s = ""
-        for i, v in enumerate(header):
-            if i == len(header) - 1:
-                s += str(v)
-            else:
-                s += str(v) + ","
-        f.write(s + "\n")
-        for i, v in enumerate(data[0::]):
-            tab = []
-            for j, val in v.items():
-                tab.append(val)
-            s = ""
-            for i, elem in enumerate(tab):
-                if i == len(tab) - 1:
-                    s += str(elem)
-                elif i == 1:
-                    s += str(u.convert_to_timestamp(elem)) + ","
-                else:
-                    s += str(elem) + ","
-            f.write(f"{s}\n")
-
-
-def edit_question(id,message,title):
-
-    file_name = con.DATA_FILE_QUESTION
-    data = read_questions("q")
-
-    for i in data:
-        if int(i['id']) == int(id):
-            i['message'] = message
-            i['title'] = title
-
-
-
-    with open(file_name, 'w+') as f:
-        header = list(data[0].keys())
-        s = ""
-        for i, v in enumerate(header):
-            if i == len(header) - 1:
-                s += str(v)
-            else:
-                s += str(v) + ","
-        f.write(s + "\n")
-        for i, v in enumerate(data[0::]):
-            tab = []
-            for j, val in v.items():
-                tab.append(val)
-            s = ""
-            for i, elem in enumerate(tab):
-                if i == len(tab) - 1:
-                    s += str(elem)
-                elif i == 1:
-                    s += str(u.convert_to_timestamp(elem)) + ","
-                else:
-                    s += str(elem) + ","
-            f.write(f"{s}\n")
+@con.connection_handler_insert
+def delete_tag_from_question(cursor,question_id,tag_id):
+    delete_query = f"""DELETE FROM question_tag
+                    WHERE tag_id={tag_id} AND question_id={question_id};"""
+    cursor.execute(delete_query)

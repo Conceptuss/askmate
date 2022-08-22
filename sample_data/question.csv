@@ -1,11 +1,9 @@
 id,submission_time,view_number,vote_number,title,message,image
-1,1493368154,29,0,"How to make lists in Python?","I am totally new to this, any hints?"
+1,1493368154,29,1,"How to make lists in Python?","I am totally new to this, any hints?"
 2,1493068124,15,10,test2,test,
 3,1659031447,0,0,jak ma to zrobić,nie wiem co się dzieje,
 4,1659032146,0,1,asd,asda,
-5,1659032541,0,1,asd,ads,
 6,1659032545,0,0,asd,asd,
-7,1659032548,0,0,asd,asd,
 8,1659032551,0,0,asd,asd,
-11,1659032562,0,0,asd,ads,
 12,1659032572,0,0,asd,asd,
+13,1659167379,0,0,tytuł,message,

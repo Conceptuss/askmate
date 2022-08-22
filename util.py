@@ -1,5 +1,27 @@
 from datetime import datetime
 import connection as con
+import bcrypt
+
+
+
+
+
+def hash_password(password):
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'),salt)
+    return hashed
+
+def password_unhash(hash,password):
+    result = bcrypt.checkpw(password.encode('utf-8'),hash)
+    return result 
+
+
+
+
+print(hash_password('test'))
+print(password_unhash(hash_password('test'),'te1st'))
+
+
 def convert_from_timestamp(time_stamp):
     return datetime.fromtimestamp(int(time_stamp))
 
@@ -22,7 +44,6 @@ def get_id(file,qid=0):
         else:
             qid = 0
 
-
         return int(qid) + 1
     elif file == con.DATA_FILE_ANSWER:
         data = con.read_from_file("a")
@@ -34,12 +55,10 @@ def get_id(file,qid=0):
             if int(splited_row[3]) == int(qid):
                 ids.append(int(splited_row[0]))
 
-
         if len(ids) > 0:
-            aid=max(ids)
+            aid = max(ids)
         else:
             aid =0
-
 
         return int(aid) + 1
     else:

@@ -5,29 +5,65 @@
     <title>Title</title>
 </head>
 <body>
+
+    <form action="{{ url_for('search_question') }}", method="POST">
+        <table>
+    
+            <tr>
+               <td>Find question: </td>
+               <td><input type="text" size = "50" name="q_title"> <input type="submit" value="Szukaj"></td>
+           </tr>
+    
+    
+        </table>
+    
+       </form>
+
+
 <table border>
         <tr>
-            <th>Id</th>
-            <th>submission_time</th>
-            <th>view_number</th>
-            <th>vote_number</th>
-            <th>title</th>
-            <th>message</th>
-            <th>image</th>
+            {% for value in q_head[1:] %}
+            <th>{{ value }}</th>
+            {% endfor%}
+        </tr>
+        <tr>
+            {% for value in q_head[1:] %}
+            <th>
+            <a href="{{ url_for('sort_question', s_title=value, s_type='ASC') }}">UP</a> / 
+                <a href="{{ url_for('sort_question', s_title=value, s_type='DESC') }}">DOWN</a>
+            {% endfor%}
+            </th>
+            
+            
         </tr>
         {% for value in users_questions %}
             <tr>
+                <td>{{ value["title"] }}</td>
+                <td>{{ value["text"] }}</td>
+                
+                <td>{{ value["time"] }}</td>
+                
+                <td>{{ value["like_number"] }} 
+                    
+                    <form action="{{ url_for('question_vote_up', q_id=value['id']) }}", method="POST">
+                        <input type="submit" value="+">
+                       </form>
+                       
+                       
+                </td>
+                <td>{{ value["dont_like_number"] }}
+                    <form action="{{ url_for('question_vote_down', q_id=value['id']) }}", method="POST">
+                        <input type="submit" value="-">
+                       </form>
+                </td>
+                <td>{{ value["view_number"] }}</td>
+                
+                
                 <td >
-                    <form action="http://127.0.0.1:8001/questions/{{ value['id'] }}">
-                    <input type = "submit" value ="{{ value['id'] }}">
+                    <form action="{{ url_for('question_answer', id=value['id']) }}">
+                    <input type = "submit" value ="View question">
                     </form>
                 </td>
-                <td>{{ value["submission_time"] }}</td>
-                <td>{{ value["view_number"] }}</td>
-                <td>{{ value["vote_number"] }}</td>
-                <td>{{ value["title"] }}</td>
-                <td>{{ value["message"] }}</td>
-                <td>{{ value["image"] }}</td>
 
             </tr>
         {% endfor %}
@@ -38,7 +74,7 @@
 
        <tr>
            <td>
-               <form action="http://127.0.0.1:8001/add_question">
+               <form action="{{ url_for('add_question') }}">
                     <input type="submit" value="Add new question">
                    </form>
            </td>

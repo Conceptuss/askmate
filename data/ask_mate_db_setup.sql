@@ -1,0 +1,69 @@
+DROP TABLE IF EXISTS question;
+DROP TABLE IF EXISTS answer;
+DROP TABLE IF EXISTS comment;
+DROP TABLE IF EXISTS question_comment;
+DROP TABLE IF EXISTS answer_comment;
+DROP TABLE IF EXISTS tag;
+DROP TABLE IF EXISTS question_tag;
+
+
+
+CREATE TABLE question (
+id SERIAL PRIMARY KEY,
+title VARCHAR(200),
+text TEXT NOT NULL,
+time DATE NOT NULL DEFAULT NOW(),
+like_number INTEGER  DEFAULT 0,
+dont_like_number INTEGER DEFAULT 0,
+view_number INTEGER DEFAULT 0
+);
+
+CREATE TABLE answer (
+id SERIAL PRIMARY KEY,
+question_id INTEGER NOT NULL
+text TEXT NOT NULL,
+time DATE NOT NULL DEFAULT NOW(),
+like_number INTEGER DEFAULT 0,
+dont_like_number INTEGER DEFAULT 0,
+view_number INTEGER DEFAULT 0
+);
+
+CREATE TABLE comment (
+id SERIAL PRIMARY KEY,
+question_id INTEGER DEFAULT NULL,
+answer_id INTEGER DEFAULT NULL
+text TEXT NOT NULL,
+time DATE NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE question_comment (
+    id SERIAL PRIMARY KEY,
+    comment_id INTEGER NOT NULL,
+    question_id INTEGER NOT NULL
+);
+
+CREATE TABLE answer_comment (
+    id SERIAL PRIMARY KEY,
+    comment_id INTEGER NOT NULL,
+    answer_id INTEGER NOT NULL
+);
+
+CREATE TABLE tag (
+id SERIAL PRIMARY KEY,
+name VARCHAR(200) NOT NULL
+);
+
+CREATE TABLE question_tag (
+    id SERIAL PRIMARY KEY,
+    tag_id INTEGER NOT NULL,
+    question_id INTEGER NOT NULL
+    );
+
+
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY NOT NULL,
+    mail VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    date_add DATE NOT NULL DEFAULT NOW()
+);

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% if data['type'] == 'question' %}
+ <form action="{{ url_for('question_answer', id=data['id']) }}">
+     <input type="submit" value="Back to question">
+ </form>
+{% endif %}
+{% if data['type'] == 'answer' %}
+ <form action="{{ url_for('view_answer', a_id=data['id']) }}">
+     <input type="submit" value="Back to answer">
+ </form>
+{% endif %}
+ <form action="{{ url_for('edit_comment_submit',c_id=c_id) }}", method="POST">
+     <table>
+
+         
+         <tr>
+            <td>Text: </td>
+            <td><input type="text" size = "150" name="text" value="{{ data['text'] }}"></td>
+        </tr>
+
+         <tr style="text-align: right; ">
+             <td></td>
+             <td ><input type="submit" value="Wyslij"></td>
+         </tr>
+
+
+     </table>
+
+    </form>
+
+</body>
+</html>
